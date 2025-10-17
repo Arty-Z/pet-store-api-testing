@@ -52,7 +52,7 @@ test.beforeEach(async ({ request }) => {
     200,
     apiMessageSchema
   );
-  apiMessageSchema.parse(await response.json());
+ 
 });
 
 test("Logs user into system", async ({ request }) => {
@@ -62,7 +62,7 @@ test("Logs user into system", async ({ request }) => {
     200,
     apiMessageSchema
   );
-  apiMessageSchema.parse(await response.json());
+  
 });
 
 test("Logs out current logged in user", async ({ request }) => {
@@ -72,7 +72,7 @@ test("Logs out current logged in user", async ({ request }) => {
     200,
     apiMessageSchema
   );
-  apiMessageSchema.parse(await response.json());
+  
 });
 
 test.afterEach(async ({ request }) => {
@@ -82,5 +82,5 @@ test.afterEach(async ({ request }) => {
     200,
     apiMessageSchema
   );
-  apiMessageSchema.parse(await response.json());
+  
 });
