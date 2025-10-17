@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { faker } from '@faker-js/faker';
 import { z } from 'zod';
-import { getAPI, postAPI } from '../utils/apiCallHelper');
+import { getAPI, postAPI } from '../utils/apiCallHelper';
 
 test.describe('User API Tests', () => {
   const BASE_URL = `${process.env.BASE_URL}${process.env.API_VERSION}`;
