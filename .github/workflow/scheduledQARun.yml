@@ -1,0 +1,91 @@
+# This is the name that shows up in GitHub Actions tab
+name: Scheduled API Tests for QA
+
+# When should this workflow run?
+on:
+  # Run automatically on a schedule (like an alarm clock!)
+  schedule:
+    # Runs every day at 1 AM CST (which is 7 AM UTC time)
+    # The 5 numbers mean: minute hour day month day-of-week
+    # '0 7 * * *' = at 7:00 AM UTC, every day, every month, every day of the week
+    - cron: '0 7 * * *'
+  # Also allow running manually by clicking a button in GitHub
+  workflow_dispatch:
+
+# The actual work that needs to be done
+jobs:
+  # This job is called "test" - you can name it anything you want
+  test:
+    # Use a computer running Ubuntu Linux (GitHub provides this for free!)
+    runs-on: ubuntu-latest
+    
+    # Give this workflow permission to write to the repository
+    permissions:
+      contents: write  # Allows pushing to gh-pages branch
+      pages: write     # Allows deploying to GitHub Pages
+      id-token: write  # Required for Pages deployment
+    
+    # The steps are like a recipe - do them in order, one by one
+    steps:
+      # Step 1: Get a copy of your code from GitHub
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Install Node.js (like installing an app on your phone)
+      # Node.js is needed to run your Playwright tests
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'  # Use the latest stable LTS version of Node.js
+          cache: 'npm'        # Save npm packages so next time is faster
+
+      # Step 3: Install all the packages your project needs
+      # (like installing all the toys before you can play)
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4: Actually run your API tests!
+      - name: Run API tests
+        env:
+          # These are settings your tests might need
+          # If you saved BASE_URL as a secret, use that; otherwise use the default
+          BASE_URL: 'https://qa.petstore.swagger.io'
+          API_VERSION: '/v2'
+        run: npm test  # This runs the "test" command from your package.json
+
+      # Step 5: Save the test results (even if tests failed!)
+      # 'if: always()' means "do this step no matter what happened before"
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results           # Name for this bundle of files
+          path: test-results/          # Which folder to save
+          retention-days: 30           # Keep these files for 30 days
+
+      # Step 6: Save the pretty HTML report (even if tests failed!)
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report      # Name for this bundle of files
+          path: playwright-report/     # Which folder to save
+          retention-days: 30           # Keep these files for 30 days
+
+      # Step 7: Put the report on a website so anyone can see it!
+      # This publishes to GitHub Pages (like putting your artwork on the fridge)
+      - name: Publish test report to GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}  # Password to publish (GitHub gives you this automatically)
+          publish_dir: ./playwright-report            # The folder with your report
+          destination_dir: test-reports/${{ github.run_number }}  # Where to put it (each run gets its own number)
+          keep_files: true                            # Don't delete old reports
+
+      # Step 8: Print a message with the link to the report
+      # Only do this if someone ran the tests manually (not on the schedule)
+      - name: Comment PR with report link
+        if: always() && github.event_name == 'workflow_dispatch'
+        run: |
+          echo "Test report available at: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/test-reports/${{ github.run_number }}"
