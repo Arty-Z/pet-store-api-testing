@@ -1,5 +1,7 @@
 # Dependencies
 node_modules/
+yarn.lock
+pnpm-lock.yaml
 
 # Test results
 test-results/
@@ -23,21 +25,20 @@ playwright/.cache/
 Thumbs.db
 
 # Logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Build outputs
+# Build output
 dist/
 build/
+out/
+
+# TypeScript
 *.tsbuildinfo
 
 # Coverage
 coverage/
 .nyc_output/
-
-# Misc
-.cache/
-temp/
-tmp/
